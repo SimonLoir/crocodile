@@ -1,9 +1,9 @@
 export default class encoder {
-    private encodeString(str: string) {
+    public encodeString(str: string) {
         return [str.length, ...str.split('').map(s => s.charCodeAt(0))];
     }
 
-    private unsignedLEB128(n: number) {
+    public unsignedLEB128(n: number) {
         const buffer = [];
         do {
             let byte = n & 0x7f;
@@ -16,7 +16,7 @@ export default class encoder {
         return buffer;
     }
 
-    private signedLEB128 = (n: number) => {
+    public signedLEB128 = (n: number) => {
         const buffer = [];
         let more = true;
         while (more) {

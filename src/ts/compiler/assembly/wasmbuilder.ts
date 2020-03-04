@@ -45,5 +45,50 @@ export default class wasm_builder extends binary_builder {
         ];
     }
 
+    private push(data: any[]) {
+        this.code_array = [...this.code_array, ...data];
+    }
+
+    public addFunctionType(
+        args: Array<'i32' | 'i64' | 'f32' | 'f64'>,
+        return_type: 'i32' | 'i64' | 'f32' | 'f64'
+    ) {
+        const args_codes = args.map(arg => this.value_codes[arg]);
+        const return_code = this.value_codes[return_type];
+
+        this.push(
+            this.createSection(
+                this.section_codes.type,
+                this.vector([
+                    [
+                        0x60,
+                        ...this.vector(args_codes),
+                        ...this.vector([return_code])
+                    ],
+                    [
+                        0x60,
+                        ...this.vector(args_codes),
+                        ...this.vector([return_code])
+                    ]
+                ])
+            )
+        );
+    }
+
+    private createSection(sectionType: any, data: any[]) {
+        return [sectionType, ...this.vector(data)];
+    }
+
+    private vector(data: any[]) {
+        return [
+            this.encoder.unsignedLEB128(data.length),
+            ...this.flatten(data)
+        ];
+    }
+
+    private flatten(arr: any[]) {
+        return [].concat.apply([], arr);
+    }
+
     private createFunction(name: string) {}
 }
