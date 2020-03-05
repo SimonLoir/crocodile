@@ -127,20 +127,26 @@ export default class wasm_builder extends binary_builder {
      */
     protected build() {
         this.code_array = [
+            // Defines a wasm module
             ...this.wasm_module_header,
+            // Defines the version of webassembly
             ...this.wasm_module_version,
+            // Defines the types of the functions
             ...this.createSection(
                 this.section_codes.type,
                 this.vector(this.types)
             ),
+            // Defines the functions
             ...this.createSection(
                 this.section_codes.func,
                 this.vector(this.funcs)
             ),
+            // Exports the functions
             ...this.createSection(
                 this.section_codes.export,
                 this.vector(this.exports)
             ),
+            // The code of the functions
             ...this.createSection(
                 this.section_codes.code,
                 this.vector(this.code)

@@ -3,8 +3,8 @@ import wasm_builder from './compiler/assembly/wasmbuilder';
 const builder = new wasm_builder();
 const c = new compiler(builder);
 
-c.compile(`#python
-def test(a:int, b:int):
+c.compile(`
+def i32 test(i32 a, i32 b):
     return a + b
 `);
 
