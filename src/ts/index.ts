@@ -6,6 +6,8 @@ const c = new compiler(builder);
 c.compile(`
 def i32 _test125(i32 a, i32 b):
     return a + b
+def f32 sub (ia32 a, ia32 b):
+    return a - b
 `);
 
 const test = async () => {
@@ -26,7 +28,7 @@ button.addEventListener('click', () =>
 function downloadBlob(data: any, fileName: string, mimeType: string) {
     var blob: any, url: any;
     blob = new Blob([data], {
-        type: mimeType
+        type: mimeType,
     });
     url = window.URL.createObjectURL(blob);
     downloadURL(url, fileName);

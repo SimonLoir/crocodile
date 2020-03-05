@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 export default class encoder {
     public encodeString(str: string) {
-        return [str.length, ...str.split('').map(s => s.charCodeAt(0))];
+        return [str.length, ...str.split('').map((s) => s.charCodeAt(0))];
     }
 
     public unsignedLEB128(n: number) {
