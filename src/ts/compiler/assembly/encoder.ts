@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 export default class encoder {
     public encodeString(str: string) {
         return [str.length, ...str.split('').map(s => s.charCodeAt(0))];
@@ -34,4 +35,10 @@ export default class encoder {
         }
         return buffer;
     };
+
+    public ieee754(n: number) {
+        const buf = Buffer.allocUnsafe(4);
+        buf.writeFloatLE(n, 0);
+        return Uint8Array.from(buf);
+    }
 }

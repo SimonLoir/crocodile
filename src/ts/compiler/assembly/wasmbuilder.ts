@@ -2,7 +2,7 @@ import binary_builder from '../binary_builder';
 import encoder from './encoder';
 
 export default class wasm_builder extends binary_builder {
-    private encoder = new encoder();
+    public encoder = new encoder();
     private types: any[] = [];
     private funcs: any[] = [];
     private exports: any[] = [];
@@ -24,28 +24,32 @@ export default class wasm_builder extends binary_builder {
         start: 8,
         element: 9,
         code: 10,
-        data: 11,
+        data: 11
     };
 
     private value_codes = {
         i32: 0x7f,
         i64: 0x7e,
         f32: 0x7d,
-        f64: 0x7c,
+        f64: 0x7c
     };
 
     private static export_codes = {
         func: 0x00,
         table: 0x01,
         mem: 0x02,
-        global: 0x03,
+        global: 0x03
     };
 
     public static op_codes = {
         end: 0x0b,
         get_local: 0x20,
+        /**
+         * Dealing with f32
+         */
         f32_add: 0x92,
         f32_sub: 0x93,
+        f32_const: 0x43
     };
 
     constructor() {
@@ -62,13 +66,13 @@ export default class wasm_builder extends binary_builder {
         args: Array<'i32' | 'i64' | 'f32' | 'f64'>,
         return_type: 'i32' | 'i64' | 'f32' | 'f64'
     ) {
-        const args_codes = args.map((arg) => this.value_codes[arg]);
+        const args_codes = args.map(arg => this.value_codes[arg]);
         const return_code = this.value_codes[return_type];
         return this.encoder.signedLEB128(
             this.types.push([
                 0x60,
                 ...this.vector(args_codes),
-                ...this.vector([return_code]),
+                ...this.vector([return_code])
             ]) - 1
         );
     }
@@ -89,7 +93,7 @@ export default class wasm_builder extends binary_builder {
     private vector(data: any[]) {
         return [
             this.encoder.unsignedLEB128(data.length),
-            ...this.flatten(data),
+            ...this.flatten(data)
         ];
     }
 
@@ -102,23 +106,15 @@ export default class wasm_builder extends binary_builder {
      * @param name the name of the function in the exports
      * @param type the type of the function
      */
-    public createFunction(name: string, type: number[]) {
+    public createFunction(name: string, type: number[], func_code: any[]) {
         const functionIndex = this.funcs.push(type) - 1;
         this.code.push(
-            this.vector([
-                0x0,
-                wasm_builder.op_codes.get_local,
-                this.encoder.unsignedLEB128(0),
-                wasm_builder.op_codes.get_local,
-                this.encoder.unsignedLEB128(1),
-                wasm_builder.op_codes.f32_add,
-                wasm_builder.op_codes.end,
-            ])
+            this.vector([0x0, ...func_code, wasm_builder.op_codes.end])
         );
         this.exports.push([
             ...this.encoder.encodeString(name),
             wasm_builder.export_codes.func,
-            this.encoder.signedLEB128(functionIndex),
+            this.encoder.signedLEB128(functionIndex)
         ]);
     }
 
@@ -150,7 +146,7 @@ export default class wasm_builder extends binary_builder {
             ...this.createSection(
                 this.section_codes.code,
                 this.vector(this.code)
-            ),
+            )
         ];
     }
 }

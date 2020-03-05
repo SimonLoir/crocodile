@@ -9,8 +9,14 @@ def i32 test(i32 a, i32 b):
 `);
 
 const f32_fn = builder.addFunctionType(['f32', 'f32'], 'f32');
-builder.createFunction('f32add', f32_fn);
-builder.createFunction('f32add2', f32_fn);
+builder.createFunction('f32add', f32_fn, [
+    wasm_builder.op_codes.f32_const,
+    ...builder.encoder.ieee754(15.551),
+    wasm_builder.op_codes.f32_const,
+    ...builder.encoder.ieee754(15.4),
+    wasm_builder.op_codes.f32_add
+]);
+//builder.createFunction('f32add2', f32_fn, []);
 
 console.log(f32_fn);
 
@@ -32,7 +38,7 @@ button.addEventListener('click', () =>
 function downloadBlob(data: any, fileName: string, mimeType: string) {
     var blob: any, url: any;
     blob = new Blob([data], {
-        type: mimeType,
+        type: mimeType
     });
     url = window.URL.createObjectURL(blob);
     downloadURL(url, fileName);

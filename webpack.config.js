@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    target: 'node',
+    target: 'web',
     entry: {
         index: './src/ts/index.ts'
     },
