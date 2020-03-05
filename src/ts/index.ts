@@ -4,21 +4,9 @@ const builder = new wasm_builder();
 const c = new compiler(builder);
 
 c.compile(`
-def i32 test(i32 a, i32 b):
+def i32 _test125(i32 a, i32 b):
     return a + b
 `);
-
-const f32_fn = builder.addFunctionType(['f32', 'f32'], 'f32');
-builder.createFunction('f32add', f32_fn, [
-    wasm_builder.op_codes.f32_const,
-    ...builder.encoder.ieee754(15.551),
-    wasm_builder.op_codes.f32_const,
-    ...builder.encoder.ieee754(15.4),
-    wasm_builder.op_codes.f32_add
-]);
-//builder.createFunction('f32add2', f32_fn, []);
-
-console.log(f32_fn);
 
 const test = async () => {
     const { instance } = await WebAssembly.instantiate(builder.export());
