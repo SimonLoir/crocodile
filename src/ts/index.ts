@@ -8,12 +8,15 @@ def test(a:int, b:int):
     return a + b
 `);
 
-builder.addFunctionType(['i32', 'i32'], 'i32');
-//builder.addFunctionType(['i32', 'f64'], 'f64');
+const f32_fn = builder.addFunctionType(['f32', 'f32'], 'f32');
+builder.createFunction('f32add', f32_fn);
+builder.createFunction('f32add2', f32_fn);
+
+console.log(f32_fn);
 
 const test = async () => {
     const { instance } = await WebAssembly.instantiate(builder.export());
-
-    console.log(instance.exports);
+    //@ts-ignore
+    window.fn = instance.exports;
 };
 test();

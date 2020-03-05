@@ -3,6 +3,10 @@ import encoder from './encoder';
 
 export default class wasm_builder extends binary_builder {
     private encoder = new encoder();
+    private types: any[] = [];
+    private funcs: any[] = [];
+    private exports: any[] = [];
+    private code: any[] = [];
 
     private wasm_module_header = [0x00, 0x61, 0x73, 0x6d];
 
@@ -20,69 +24,72 @@ export default class wasm_builder extends binary_builder {
         start: 8,
         element: 9,
         code: 10,
-        data: 11
+        data: 11,
     };
 
     private value_codes = {
         i32: 0x7f,
         i64: 0x7e,
         f32: 0x7d,
-        f64: 0x7c
+        f64: 0x7c,
     };
 
-    private export_codes = {
+    private static export_codes = {
         func: 0x00,
         table: 0x01,
         mem: 0x02,
-        global: 0x03
+        global: 0x03,
+    };
+
+    public static op_codes = {
+        end: 0x0b,
+        get_local: 0x20,
+        f32_add: 0x92,
+        f32_sub: 0x93,
     };
 
     constructor() {
         super();
-        this.code_array = [
-            ...this.wasm_module_header,
-            ...this.wasm_module_version
-        ];
+        this.code_array = [];
     }
 
-    private push(data: any[]) {
-        this.code_array = [...this.code_array, ...data];
-    }
-
+    /**
+     * Creates a new function type
+     * @param args the arguments represented as a type name
+     * @param return_type the type name of the return value
+     */
     public addFunctionType(
         args: Array<'i32' | 'i64' | 'f32' | 'f64'>,
         return_type: 'i32' | 'i64' | 'f32' | 'f64'
     ) {
-        const args_codes = args.map(arg => this.value_codes[arg]);
+        const args_codes = args.map((arg) => this.value_codes[arg]);
         const return_code = this.value_codes[return_type];
-
-        this.push(
-            this.createSection(
-                this.section_codes.type,
-                this.vector([
-                    [
-                        0x60,
-                        ...this.vector(args_codes),
-                        ...this.vector([return_code])
-                    ],
-                    [
-                        0x60,
-                        ...this.vector(args_codes),
-                        ...this.vector([return_code])
-                    ]
-                ])
-            )
+        return this.encoder.signedLEB128(
+            this.types.push([
+                0x60,
+                ...this.vector(args_codes),
+                ...this.vector([return_code]),
+            ]) - 1
         );
     }
 
+    /**
+     * Creates a new section
+     * @param sectionType the section code of the section
+     * @param data the content of the section
+     */
     private createSection(sectionType: any, data: any[]) {
         return [sectionType, ...this.vector(data)];
     }
 
+    /**
+     * Creates a new vector from the data
+     * @param data
+     */
     private vector(data: any[]) {
         return [
             this.encoder.unsignedLEB128(data.length),
-            ...this.flatten(data)
+            ...this.flatten(data),
         ];
     }
 
@@ -90,5 +97,54 @@ export default class wasm_builder extends binary_builder {
         return [].concat.apply([], arr);
     }
 
-    private createFunction(name: string) {}
+    /**
+     * Creates a new function and registers it in the func array and the export system
+     * @param name the name of the function in the exports
+     * @param type the type of the function
+     */
+    public createFunction(name: string, type: number[]) {
+        const functionIndex = this.funcs.push(type) - 1;
+        this.code.push(
+            this.vector([
+                0x0,
+                wasm_builder.op_codes.get_local,
+                this.encoder.unsignedLEB128(0),
+                wasm_builder.op_codes.get_local,
+                this.encoder.unsignedLEB128(1),
+                wasm_builder.op_codes.f32_add,
+                wasm_builder.op_codes.end,
+            ])
+        );
+        this.exports.push([
+            ...this.encoder.encodeString(name),
+            wasm_builder.export_codes.func,
+            this.encoder.signedLEB128(functionIndex),
+        ]);
+    }
+
+    /**
+     * Builds an array of instructions
+     */
+    protected build() {
+        this.code_array = [
+            ...this.wasm_module_header,
+            ...this.wasm_module_version,
+            ...this.createSection(
+                this.section_codes.type,
+                this.vector(this.types)
+            ),
+            ...this.createSection(
+                this.section_codes.func,
+                this.vector(this.funcs)
+            ),
+            ...this.createSection(
+                this.section_codes.export,
+                this.vector(this.exports)
+            ),
+            ...this.createSection(
+                this.section_codes.code,
+                this.vector(this.code)
+            ),
+        ];
+    }
 }
