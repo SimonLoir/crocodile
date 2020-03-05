@@ -1,11 +1,13 @@
 import binary_builder from './binary_builder';
 import CompileError from './compile_error';
+import { types } from './assembly/types';
 
 export default class compiler {
     constructor(private builder: binary_builder) {}
     private legal_types = ['i32', 'f32', 'i64', 'f64'];
     // The  main function can't be used because it's the function used when instructions are not in functions
     private funcs: string[] = ['main'];
+    private vars: any = {};
     /**
      * Compiles the given code into lower level code
      * @param code
@@ -39,11 +41,48 @@ export default class compiler {
                 if (this.legal_types.indexOf(function_return_type) < 0)
                     throw new CompileError(
                         `Type "${function_return_type}" is not a legal return type. Accepted types are ${this.legal_types
-                            .map((type) => `"${type}"`)
+                            .map(type => `"${type}"`)
                             .join(',')}`,
                         i
                     );
+
+                let vars: string[] = [];
+                let var_types: types[] = [];
+
+                const args = function_arguments
+                    .split(',')
+                    .map(arg => arg.trim().split(' '));
+                args.forEach(arg => {
+                    if (arg.length != 2)
+                        throw new CompileError(
+                            'Function arguments must be valid',
+                            i
+                        );
+
+                    //@ts-ignore
+                    const var_type: types = arg[0];
+                    const var_name = arg[1];
+
+                    if (vars.indexOf(var_name) >= 0)
+                        throw new CompileError(
+                            `"${var_name}" has already been declared in this function.`,
+                            i
+                        );
+
+                    if (this.legal_types.indexOf(var_type) < 0)
+                        throw new CompileError(
+                            `Type "${var_type}" of "${var_name}" is not a legal type.`,
+                            i
+                        );
+
+                    vars.push(var_name);
+                    vars.push(var_type);
+                });
+
+                this.vars[function_export_name] = { vars, var_types };
             }
         });
+
+        console.log('Compiled with no error !');
     }
 }
