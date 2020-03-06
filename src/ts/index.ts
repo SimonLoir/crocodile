@@ -9,7 +9,8 @@ console.time('Compile time');
 try {
     c.compile(`
 def i32 _test125(i32 a, i32 b):
-    return a + b
+    var i32 c = a + b
+    return c + b * a 
 def i32 sub (i32 a, i32 b):
     return a - b
 `);
@@ -37,7 +38,7 @@ button.addEventListener('click', () =>
 function downloadBlob(data: any, fileName: string, mimeType: string) {
     var blob: any, url: any;
     blob = new Blob([data], {
-        type: mimeType
+        type: mimeType,
     });
     url = window.URL.createObjectURL(blob);
     downloadURL(url, fileName);
