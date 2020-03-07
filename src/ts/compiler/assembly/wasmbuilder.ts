@@ -223,14 +223,14 @@ export default class wasm_builder extends binary_builder {
      * Creates a new vector from the data
      * @param data
      */
-    private vector(data: any[]) {
+    public vector(data: any[]) {
         return [
             this.encoder.unsignedLEB128(data.length),
             ...this.flatten(data),
         ];
     }
 
-    private flatten(arr: any[]) {
+    public flatten(arr: any[]) {
         return [].concat.apply([], arr);
     }
 

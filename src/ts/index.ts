@@ -25,7 +25,23 @@ const type = builder.addFunctionType(['f32'], 'f32');
 
 builder.createFunction('test', type, [
     // Vars in the body
-    0x00,
+    //...builder.vector([wasm_builder.codes.i32]),
+    //...builder.vector([wasm_builder.codes.i32, 0x00, 0x00]),
+
+    ...builder.vector([
+        [1, wasm_builder.codes.f32],
+        [1, wasm_builder.codes.f32],
+    ]),
+
+    wasm_builder.codes.const_f32,
+    ...builder.encoder.ieee754(5),
+    wasm_builder.codes.set_local,
+    1,
+
+    wasm_builder.codes.const_f32,
+    ...builder.encoder.ieee754(6),
+    wasm_builder.codes.set_local,
+    2,
 
     // Equals to 5 ?
     wasm_builder.codes.get_local,
@@ -50,7 +66,11 @@ builder.createFunction('test', type, [
 
     // Gets the argument
     wasm_builder.codes.get_local,
-    0,
+    1,
+    wasm_builder.codes.get_local,
+    2,
+
+    wasm_builder.codes.add_f32,
 
     // Returns the first argument
     0x0b,
