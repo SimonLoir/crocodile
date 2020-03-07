@@ -53,6 +53,7 @@ export default class compiler {
                     const args = function_arguments
                         .split(',')
                         .map((arg) => arg.trim().split(' '));
+
                     args.forEach((arg) => {
                         if (arg.length != 2)
                             throw new CompileError(

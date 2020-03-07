@@ -20,6 +20,41 @@ def i32 sub (i32 a, i32 b):
     }
 }
 
+const type = builder.addFunctionType(['f32'], 'f32');
+
+builder.createFunction('test', type, [
+    // Vars in the body
+    0x00,
+
+    // Equals to 5 ?
+    wasm_builder.op_codes.get_local,
+    builder.encoder.signedLEB128(0),
+
+    wasm_builder.op_codes.get_local,
+    builder.encoder.signedLEB128(0),
+
+    0x5b,
+
+    // If ($1) then
+    0x04,
+    0x40,
+
+    wasm_builder.op_codes.f32_const,
+    ...builder.encoder.ieee754(-1),
+
+    // Return
+    0x0f,
+    0x0b,
+
+    wasm_builder.op_codes.get_local,
+    0,
+
+    // Returns the first argument
+    0x0b,
+]);
+
+console.log(builder.export());
+
 const test = async () => {
     const { instance } = await WebAssembly.instantiate(builder.export());
     //@ts-ignore
