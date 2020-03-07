@@ -24,10 +24,7 @@ def i32 sub (i32 a, i32 b):
 const type = builder.addFunctionType(['f32'], 'f32');
 
 builder.createFunction('test', type, [
-    // Vars in the body
-    //...builder.vector([wasm_builder.codes.i32]),
-    //...builder.vector([wasm_builder.codes.i32, 0x00, 0x00]),
-
+    // Vars in the body of the function
     ...builder.vector([
         [1, wasm_builder.codes.f32],
         [1, wasm_builder.codes.f32],
