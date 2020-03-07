@@ -1,6 +1,7 @@
 import compiler from './compiler/compiler';
 import wasm_builder from './compiler/assembly/wasmbuilder';
 import CompileError from './compiler/compile_error';
+import binary_viewer from './compiler/assembly/binary_viewer';
 const builder = new wasm_builder();
 const c = new compiler(builder);
 
@@ -27,33 +28,35 @@ builder.createFunction('test', type, [
     0x00,
 
     // Equals to 5 ?
-    wasm_builder.op_codes.get_local,
-    builder.encoder.signedLEB128(0),
+    wasm_builder.codes.get_local,
+    0,
 
-    wasm_builder.op_codes.get_local,
-    builder.encoder.signedLEB128(0),
-
+    wasm_builder.codes.const_f32,
+    ...builder.encoder.ieee754(5),
+    // Equal op_code
     0x5b,
 
     // If ($1) then
     0x04,
     0x40,
 
-    wasm_builder.op_codes.f32_const,
+    // -1 when equals 5
+    wasm_builder.codes.const_f32,
     ...builder.encoder.ieee754(-1),
 
     // Return
     0x0f,
     0x0b,
 
-    wasm_builder.op_codes.get_local,
+    // Gets the argument
+    wasm_builder.codes.get_local,
     0,
 
     // Returns the first argument
     0x0b,
 ]);
 
-console.log(builder.export());
+binary_viewer.decodeWasm(builder.export());
 
 const test = async () => {
     const { instance } = await WebAssembly.instantiate(builder.export());

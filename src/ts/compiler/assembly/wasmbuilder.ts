@@ -1,6 +1,8 @@
 import binary_builder from '../binary_builder';
 import encoder from './encoder';
 
+export let reverse_codes: any = {};
+
 export default class wasm_builder extends binary_builder {
     public encoder = new encoder();
     private types: any[] = [];
@@ -27,29 +29,160 @@ export default class wasm_builder extends binary_builder {
         data: 11,
     };
 
-    public value_codes = {
+    public static codes = {
+        // Value types
         i32: 0x7f,
         i64: 0x7e,
         f32: 0x7d,
         f64: 0x7c,
-    };
 
-    private static export_codes = {
-        func: 0x00,
-        table: 0x01,
-        mem: 0x02,
-        global: 0x03,
-    };
+        // Export types
+        export_func: 0x00,
+        export_table: 0x01,
+        export_mem: 0x02,
+        export_global: 0x03,
 
-    public static op_codes = {
-        end: 0x0b,
+        // Variable Instructions
         get_local: 0x20,
-        /**
-         * Dealing with f32
-         */
-        f32_add: 0x92,
-        f32_sub: 0x93,
-        f32_const: 0x43,
+        set_local: 0x21,
+        tee_local: 0x22,
+        get_global: 0x23,
+        set_global: 0x24,
+
+        // Control Instructions
+        end: 0x0b,
+        unreachable: 0x00,
+        nop: 0x01,
+        block: 0x02,
+        loop: 0x03,
+        if: 0x04,
+        else: 0x05,
+        br: 0x0c,
+        br_if: 0x0d,
+        br_table: 0x0e,
+        return: 0x0f,
+        call: 0x10,
+        call_indirect: 0x11,
+
+        // Parametric Instructions
+        drop: 0x1a,
+        select: 0x1b,
+
+        // Constants
+        const_i32: 0x41,
+        const_i64: 0x42,
+        const_f32: 0x43,
+        const_f46: 0x44,
+
+        // i32 Instructions
+        eqz_i32: 0x45,
+        eq_i32: 0x46,
+        ne_i32: 0x47,
+        lt_s_i32: 0x48,
+        lt_u_i32: 0x49,
+        gt_s_i32: 0x4a,
+        gt_u_i32: 0x4b,
+        le_s_i32: 0x4c,
+        le_u_i32: 0x4d,
+        ge_s_i32: 0x4e,
+        ge_u_i32: 0x4f,
+
+        clz_i32: 0x67,
+        ctz_i32: 0x68,
+        popcnt_i32: 0x69,
+        add_i32: 0x6a,
+        sub_i32: 0x6b,
+        mul_i32: 0x6c,
+        div_s_i32: 0x6d,
+        div_u_i32: 0x6e,
+        rem_s_i32: 0x6f,
+        rem_u_i32: 0x70,
+        and_i32: 0x71,
+        or_i32: 0x72,
+        xor_i32: 0x73,
+        shl_i32: 0x74,
+        shr_s_i32: 0x75,
+        shr_u_i32: 0x76,
+        rotl_i32: 0x77,
+        rotr_i32: 0x78,
+
+        // i64 Instructions
+        eqz_i64: 0x50,
+        eq_i64: 0x51,
+        ne_i64: 0x52,
+        lt_s_i64: 0x53,
+        lt_u_i64: 0x54,
+        gt_s_i64: 0x55,
+        gt_u_i64: 0x56,
+        le_s_i64: 0x57,
+        le_u_i64: 0x58,
+        ge_s_i64: 0x59,
+        ge_u_i64: 0x5a,
+
+        clz_i64: 0x79,
+        ctz_i64: 0x7a,
+        popcnt_i64: 0x7b,
+        add_i64: 0x7c,
+        sub_i64: 0x7d,
+        mul_i64: 0x7e,
+        div_s_i64: 0x7f,
+        div_u_i64: 0x80,
+        rem_s_i64: 0x81,
+        rem_u_i64: 0x82,
+        and_i64: 0x83,
+        or_i64: 0x84,
+        xor_i64: 0x85,
+        shl_i64: 0x86,
+        shr_s_i64: 0x87,
+        shr_u_i64: 0x88,
+        rotl_i64: 0x89,
+        rotr_i64: 0x8a,
+
+        // f32 Instructions
+        eq_f32: 0x5b,
+        ne_f32: 0x5c,
+        lt_f32: 0x5d,
+        gt_f32: 0x5e,
+        le_f32: 0x5f,
+        ge_f32: 0x60,
+
+        abs_f32: 0x8b,
+        neg_f32: 0x8c,
+        ceil_f32: 0x8d,
+        floor_f32: 0x8e,
+        trunc_f32: 0x8f,
+        nearest_f32: 0x90,
+        sqrt_f32: 0x91,
+        add_f32: 0x92,
+        sub_f32: 0x93,
+        mul_f32: 0x94,
+        div_f32: 0x95,
+        min_f32: 0x96,
+        max_f32: 0x97,
+        copysign_f32: 0x98,
+
+        // f64 Instructions
+        eq_f64: 0x61,
+        ne_f64: 0x62,
+        lt_f64: 0x63,
+        gt_f64: 0x64,
+        le_f64: 0x65,
+        ge_f64: 0x66,
+
+        abs_f64: 0x99,
+        neg_f64: 0x9a,
+        ceil_f64: 0x9b,
+        floor_f64: 0x9c,
+        trunc_f64: 0x9d,
+        nearest_f64: 0x9e,
+        sqrt_f64: 0x9f,
+        add_f64: 0xa0,
+        sub_f64: 0xa1,
+        mul_f64: 0xa2,
+        div_f64: 0xa3,
+        min_f64: 0xa4,
+        max_f64: 0xa5,
+        copysign_f64: 0xa6,
     };
 
     constructor() {
@@ -66,8 +199,8 @@ export default class wasm_builder extends binary_builder {
         args: Array<'i32' | 'i64' | 'f32' | 'f64'>,
         return_type: 'i32' | 'i64' | 'f32' | 'f64'
     ) {
-        const args_codes = args.map((arg) => this.value_codes[arg]);
-        const return_code = this.value_codes[return_type];
+        const args_codes = args.map((arg) => wasm_builder.codes[arg]);
+        const return_code = wasm_builder.codes[return_type];
         return this.encoder.signedLEB128(
             this.types.push([
                 0x60,
@@ -112,7 +245,7 @@ export default class wasm_builder extends binary_builder {
         this.code.push(this.vector(func_code));
         this.exports.push([
             ...this.encoder.encodeString(name),
-            wasm_builder.export_codes.func,
+            wasm_builder.codes.export_func,
             this.encoder.signedLEB128(functionIndex),
         ]);
     }
@@ -149,3 +282,13 @@ export default class wasm_builder extends binary_builder {
         ];
     }
 }
+
+const keys = Object.keys(wasm_builder.codes);
+
+keys.forEach((key) => {
+    // @ts-ignore
+    const value = wasm_builder.codes[key];
+    reverse_codes[value] = key;
+});
+
+console.log(reverse_codes);
