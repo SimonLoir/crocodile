@@ -1,10 +1,10 @@
-# PyWasm
+# Crocodile.js
 
-## What is PyWasm ?
+## What is Crocodile.js ?
 
-PyWasm is an open source project that aims to create a new programming language based on the python syntax. The main difference resides in the fact that pywasm is strictly typed and can be compiled. The main compilation target is webassembly.
+Crocodile.js is an open source project that aims to create a new programming language based on the python syntax. The main difference resides in the fact that Crocodile.js is strictly typed and can be compiled. The main compilation target is webassembly.
 
-PyWasm comes with it's own PyWasm to binary compiler that lets you create wasm files easily. Wasm files can then be used in your javascript to reduce the execution time of your code.
+Crocodile.js comes with it's own Crocodile.js to binary compiler that lets you create wasm files easily. Wasm files can then be used in your javascript to reduce the execution time of your code.
 
 ## What are the supported types ?
 
@@ -30,7 +30,7 @@ var i32 b
 
 ## How to write a function ?
 
-Here is a basic PyWasm function :
+Here is a basic Crocodile.js function :
 
 ```
 def [return type] [name]([args]):
